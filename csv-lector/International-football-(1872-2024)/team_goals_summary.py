@@ -19,8 +19,6 @@ def sumData(df, *datas):
 
 
 totalGoals = sumData(dfResults, "home_score", "away_score")
-print("All matchs of history in international: ", allRows)
-print("All goals of history in international: ", totalGoals)
 
 home_teams = set(dfResults["home_team"])
 away_teams = set(dfResults["away_team"])
@@ -41,8 +39,21 @@ home_goals = dfResults[["home_team", "home_score"]].rename(
 away_goals = dfResults[["away_team", "away_score"]].rename(
     columns={"away_team": "team", "away_score": "goals"}
 )
+all_goals = pd.concat([home_goals, away_goals])
 
-print(away_goals)
+grouped_goals = all_goals.groupby("team")["goals"].sum().reset_index()
 
-all_teams = list(home_teams.union(away_teams))
-# print(all_teams)
+total_goals = grouped_goals["goals"].sum()
+
+total_goals_df = pd.DataFrame({"team": ["Total"], "goals": [total_goals]})
+goals_each_team = pd.concat([grouped_goals, total_goals_df])
+goals_each_team_sorted = goals_each_team.sort_values(
+    by="goals", ascending=False
+).reset_index(drop=True)
+
+goals_each_team_sorted.to_csv("csv-lector/International-football-(1872-2024)/team_goals_summary.csv", index=False)
+
+
+# for index, row in grouped_goals.iterrows():
+#     team_goals = all_goals.loc[all_goals["team"] == row["team"], "goals"]
+#     print(f"Goals of {row['team']}: {team_goals.sum()}")
